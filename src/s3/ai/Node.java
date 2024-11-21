@@ -2,23 +2,25 @@ package s3.ai;
 
 import s3.util.Pair;
 
-public class Node implements Comparable<Node> {
-    Pair<Double, Double> path;
-    double cost;
+class Node implements Comparable<Node> {
+    Pair<Double, Double> position; // Posição do nó
+    double cost;                   // Custo acumulado até aqui
+    double heuristic;              // Heurística estimada
 
-    public Node(Pair<Double, Double> path, double cost) {
-        this.path = path;
+    public Node(Pair<Double, Double> position, double cost, double heuristic) {
+        this.position = position;
         this.cost = cost;
+        this.heuristic = heuristic;
     }
 
-    // Método para comparar dois nós com base no custo
+    // Retorna o valor f(n) = custo + heurística
+    public double getPriority() {
+        return cost + heuristic;
+    }
+
     @Override
     public int compareTo(Node other) {
-        return Double.compare(this.cost, other.cost);
+        // Compara baseado no valor f(n)
+        return Double.compare(this.getPriority(), other.getPriority());
     }
-    
-    @Override
-    public String toString() {
-        return path.m_a + ":" + path.m_b + " (Custo: " + cost + ")";
-    }
-} 
+}

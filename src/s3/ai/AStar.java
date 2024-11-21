@@ -7,6 +7,7 @@ import java.util.PriorityQueue;
 
 import s3.base.S3;
 import s3.entities.S3PhysicalEntity;
+import s3.mmpm.sensors.GoldCondition;
 import s3.util.Pair;
 
 
@@ -30,6 +31,11 @@ public class AStar {
 		return out;
 	}
 
+	//caluclar manhattan heuristica
+	//h(n) = |x1 - x2| + |y1 - y2|
+	private double heuristica(Pair<Double, Double> newPath){
+		return Math.abs(newPath.m_a - this.Goal.m_a) + Math.abs(newPath.m_b - this.Goal.m_b);
+	}
 	
 	
 	public static int pathDistance(double start_x, double start_y, double goal_x, double goal_y,
@@ -53,32 +59,39 @@ public class AStar {
 	public List<Pair<Double, Double>> computePath() {
             // ...
 
-			
 			List<Pair<Double, Double>> direcoes = Direcoes();
 			Pair<Double, Double> path = Start;
 
 			PriorityQueue<Node> fila = new PriorityQueue<>(); //criacao de fila prioritaria
-			fila.add(new Node(Start, 0));
+			fila.add(new Node(Start, 0, heuristica(Start)));
 
 
-			while (Passo != Goal){
+			while (!fila.isEmpty()){
 
-				//TODO: retirar elemento da fila
+				//retirar elemento da fila
+				Node node = fila.poll();
+				path = node.position;
+
+				if (path.isEqual(Goal)){
+					//TODO: retornar caminho
+					return null;
+				}
 				
 				for (Pair<Double, Double> dir : direcoes){
 					Pair<Double, Double> newPath = addPair(path, dir);
 
-
-					
-
 					//TODO: validar se newPath é viavel
+					if (game.isSpaceFree(1, newPath.m_a.intValue(), newPath.m_b.intValue()))
+					{
+						//TODO: calcular heuristica
+						double heurist = heuristica(newPath);
 
-					//TODO: calcular heuristica
+						//TODO:calcular custo
+						double custo = node.cost + 1;
 
-					//TODO:calcular distancia
-
-					//adicionar ao priorityqueue
-					fila.add(new Node(newPath, 1));
+						//adicionar ao priorityqueue
+						fila.add(new Node(newPath, custo, heurist));
+					}
 
 				}
 

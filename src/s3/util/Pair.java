@@ -8,4 +8,10 @@ public class Pair<T1,T2> {
 		m_a = a;
 		m_b = b;
 	}
+
+	public boolean isEqual(Pair<T1, T2> other)
+	{
+		if (this.m_a == other.m_a && this.m_b == other.m_b) return true;
+		else return false;
+	}
 }
