@@ -2,12 +2,13 @@ package s3.ai;
 
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.PriorityQueue;
 
 import s3.base.S3;
 import s3.entities.S3PhysicalEntity;
-import s3.mmpm.sensors.GoldCondition;
 import s3.util.Pair;
 
 
@@ -60,10 +61,12 @@ public class AStar {
             // ...
 
 			List<Pair<Double, Double>> direcoes = Direcoes();
-			Pair<Double, Double> path = Start;
+			Pair<Double, Double> path = this.Start;
+			HashMap<Pair<Double, Double>, Pair<Double, Double>> allPaths = new HashMap<>();  //filho: mae
 
 			PriorityQueue<Node> fila = new PriorityQueue<>(); //criacao de fila prioritaria
-			fila.add(new Node(Start, 0, heuristica(Start)));
+			fila.add(new Node(path, 0, heuristica(path)));
+			System.out.println(this.object.entityID + " está a " + heuristica(path));
 
 
 			while (!fila.isEmpty()){
@@ -71,31 +74,51 @@ public class AStar {
 				//retirar elemento da fila
 				Node node = fila.poll();
 				path = node.position;
+				path.print(heuristica(path));
 
 				if (path.isEqual(Goal)){
-					//TODO: retornar caminho
-					return null;
+					//retornar caminho
+					List<Pair<Double, Double>> Path = new ArrayList<>();
+					System.out.println("Encontrou o Goal");
+
+					while (!path.isEqual(Start)){
+						Path.add(allPaths.get(path));
+						path = allPaths.get(path);
+					}
+
+					 // Retorna o caminho invertido
+					Collections.reverse(Path);
+					return Path;
 				}
-				
+
 				for (Pair<Double, Double> dir : direcoes){
+
+					
 					Pair<Double, Double> newPath = addPair(path, dir);
 
-					//TODO: validar se newPath é viavel
-					if (game.isSpaceFree(1, newPath.m_a.intValue(), newPath.m_b.intValue()))
+					if (allPaths.containsValue(newPath)) continue;
+					newPath.print(heuristica(newPath));
+
+
+					//System.out.println(allPaths.containsKey(newPath));//959 97 01-> Stefany Rocha Estudante de Direito
+
+					//validar se newPath é viavel
+					if (game.isSpaceFree(1, newPath.m_a.intValue(), newPath.m_b.intValue()) && !allPaths.containsValue(newPath))
 					{
-						//TODO: calcular heuristica
+						//calcular heuristica
 						double heurist = heuristica(newPath);
 
-						//TODO:calcular custo
+						//calcular custo
 						double custo = node.cost + 1;
 
 						//adicionar ao priorityqueue
-						fila.add(new Node(newPath, custo, heurist));
-					}
+						fila.add(new Node(newPath ,custo, heurist));
 
+						//registar filho da mae
+						allPaths.put(newPath, path);//filho : mae
+					}
 				}
 
-				break;
 			}
 
             return null;
