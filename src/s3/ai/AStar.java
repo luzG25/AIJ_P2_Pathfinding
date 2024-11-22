@@ -15,54 +15,62 @@ import s3.util.Pair;
 //Implementar codigo aqui
 
 public class AStar {
-	Pair<Double, Double> Start;
-	Pair<Double, Double> Goal;
-	Pair<Double, Double> Passo;
+	Pair<Integer, Integer> Start;
+	Pair<Integer, Integer> Goal;
+	Pair<Integer, Integer> Passo;
 	S3PhysicalEntity object;
 	S3 game;
 
-	private final List<Pair<Double, Double>> Direcoes(){
-		List<Pair<Double, Double>> out = new ArrayList<>();
-
-		out.add(new Pair<Double,Double>(1.0,0.0)); // frente
-		out.add(new Pair<Double,Double>(-1.0,0.0)); // tras
-		out.add(new Pair<Double,Double>(0.0,1.0)); // esquerda
-		out.add(new Pair<Double,Double>(0.0,-1.0)); // direita
-		 
+	private final List<Pair<Integer, Integer>> Direcoes() {
+		List<Pair<Integer, Integer>> out = new ArrayList<>();
+	
+		// Movimentos ortogonais
+		out.add(new Pair<>(1, 0));   // Frente
+		out.add(new Pair<>(-1, 0));  // Trás
+		out.add(new Pair<>(0, 1));   // Esquerda
+		out.add(new Pair<>(0, -1));  // Direita
+	
+		// Movimentos diagonais
+		out.add(new Pair<>(1, 1));   // Nordeste
+		out.add(new Pair<>(1, -1));  // Sudeste
+		out.add(new Pair<>(-1, 1));  // Noroeste
+		out.add(new Pair<>(-1, -1)); // Sudoeste
+	
 		return out;
-	}
+	}	
+	
 
 	//caluclar manhattan heuristica
 	//h(n) = |x1 - x2| + |y1 - y2|
-	private double heuristica(Pair<Double, Double> newPath){
+	private double heuristica(Pair<Integer, Integer> newPath){
 		return Math.abs(newPath.m_a - this.Goal.m_a) + Math.abs(newPath.m_b - this.Goal.m_b);
 	}
 	
 	
-	public static int pathDistance(double start_x, double start_y, double goal_x, double goal_y,
+	public static int pathDistance(int start_x, int start_y, int goal_x, int goal_y,
 			S3PhysicalEntity i_entity, S3 the_game) {
 		AStar a = new AStar(start_x,start_y,goal_x,goal_y,i_entity,the_game);
-		List<Pair<Double, Double>> path = a.computePath();
+		List<Pair<Integer, Integer>> path = a.computePath();
 		if (path!=null) return path.size();
 		return -1;
 	}
 
-	public AStar(double start_x, double start_y, double goal_x, double goal_y,
+	public AStar(int start_x, int start_y, int goal_x, int goal_y,
 			S3PhysicalEntity i_entity, S3 the_game) {
             // ...
 
-			this.Start = new Pair<Double,Double>(start_x, start_y);
-			this.Goal = new Pair<Double, Double>(goal_x, goal_y);
+			this.Start = new Pair<Integer, Integer>(start_x, start_y);
+			this.Goal = new Pair<Integer, Integer>(goal_x, goal_y);
 			this.game = the_game;
 			this.object = i_entity;			
 	}
 
-	public List<Pair<Double, Double>> computePath() {
+	public List<Pair<Integer, Integer>> computePath() {
             // ...
 
-			List<Pair<Double, Double>> direcoes = Direcoes();
-			Pair<Double, Double> path = this.Start;
-			HashMap<Pair<Double, Double>, Pair<Double, Double>> allPaths = new HashMap<>();  //filho: mae
+			List<Pair<Integer, Integer>> direcoes = Direcoes();
+			Pair<Integer, Integer> path = this.Start;
+			HashMap<Pair<Integer, Integer>, Pair<Integer, Integer>> allPaths = new HashMap<>();  //filho: mae
 
 			PriorityQueue<Node> fila = new PriorityQueue<>(); //criacao de fila prioritaria
 			fila.add(new Node(path, 0, heuristica(path)));
@@ -76,12 +84,13 @@ public class AStar {
 				path = node.position;
 				path.print(heuristica(path));
 
-				if (path.isEqual(Goal)){
+				if (path.equals(this.Goal)){
 					//retornar caminho
-					List<Pair<Double, Double>> Path = new ArrayList<>();
+					List<Pair<Integer, Integer>> Path = new ArrayList<>();
 					System.out.println("Encontrou o Goal");
+					Path.add(path);
 
-					while (!path.isEqual(Start)){
+					while (!path.equals(this.Start)){
 						Path.add(allPaths.get(path));
 						path = allPaths.get(path);
 					}
@@ -91,25 +100,21 @@ public class AStar {
 					return Path;
 				}
 
-				for (Pair<Double, Double> dir : direcoes){
+				for (Pair<Integer, Integer> dir : direcoes){
+					Pair<Integer, Integer> newPath = addPair(path, dir);
 
-					
-					Pair<Double, Double> newPath = addPair(path, dir);
-
-					if (allPaths.containsValue(newPath)) continue;
-					newPath.print(heuristica(newPath));
 
 
 					//System.out.println(allPaths.containsKey(newPath));//959 97 01-> Stefany Rocha Estudante de Direito
 
 					//validar se newPath é viavel
-					if (game.isSpaceFree(1, newPath.m_a.intValue(), newPath.m_b.intValue()) && !allPaths.containsValue(newPath))
+					if ( !allPaths.containsValue(newPath))// && game.isSpaceFree(1, newPath.m_a, newPath.m_b))
 					{
 						//calcular heuristica
 						double heurist = heuristica(newPath);
 
 						//calcular custo
-						double custo = node.cost + 1;
+						double custo = node.cost + 1 ;
 
 						//adicionar ao priorityqueue
 						fila.add(new Node(newPath ,custo, heurist));
@@ -124,11 +129,11 @@ public class AStar {
             return null;
 	}
 
-	private Pair<Double, Double> addPair(Pair<Double, Double> a, Pair<Double, Double> b){
-		double x = a.m_a + b.m_a;
-		double y = a.m_b + b.m_b;
+	private Pair<Integer, Integer> addPair(Pair<Integer, Integer> a, Pair<Integer, Integer> b){
+		int x = a.m_a + b.m_a;
+		int y = a.m_b + b.m_b;
 
-		return new Pair<Double, Double>(x, y);
+		return new Pair<Integer, Integer>(x, y);
 	}
 
 }

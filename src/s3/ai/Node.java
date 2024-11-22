@@ -3,11 +3,11 @@ package s3.ai;
 import s3.util.Pair;
 
 class Node implements Comparable<Node> {
-    Pair<Double, Double> position; // Posição do nó
+    Pair<Integer, Integer> position; // Posição do nó
     double cost;                   // Custo acumulado até aqui
     double heuristic;              // Heurística estimada
 
-    public Node(Pair<Double, Double> position, double cost, double heuristic) {
+    public Node(Pair<Integer, Integer> position, double cost, double heuristic) {
         this.position = position;
         this.cost = cost;
         this.heuristic = heuristic;

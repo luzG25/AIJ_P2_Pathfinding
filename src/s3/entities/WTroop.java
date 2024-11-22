@@ -18,7 +18,7 @@ import s3.util.Pair;
 public abstract class WTroop extends WUnit {
 	protected AStar pathPlanner;
 
-	protected List<Pair<Double, Double>> path;
+	protected List<Pair<Integer, Integer>> path;
 	
 	protected int previous_x = 0, previous_y = 0, previous_z = 0;
 	protected int move_timmer;
